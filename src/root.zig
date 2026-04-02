@@ -1,9 +1,12 @@
-const std = @import("std");
 pub const maths = @import("maths/functions.zig");
 pub const specials = @import("maths/specials.zig"); 
 pub const regression = @import("metrics/regression.zig");
 pub const normaltests = @import("statstests/normal.zig");
-pub const utils = @import("utils.zig");
+pub const conversions = @import("utils/conversions.zig");
+pub const csv = @import("utils/csv.zig");
+pub const cli = @import("utils/cli.zig")
+;
+const std = @import("std");
 const series = @import("consts.zig");
 
 test "test metrics" {
@@ -98,6 +101,23 @@ test "t-test" {
     const df = results[1];
     const p = results[2];
     std.debug.print("t {any}; df {any}; p {any}\n", .{t, df, p});
+}
+
+test "test csv reader" {
+    const allocator = std.heap.page_allocator;
+
+    var matrix = try csv.readCsv(allocator, "classification_results.csv", ',');
+    defer matrix.deinit();
+
+    for (0..matrix.cols) |c| {
+        std.debug.print("  {s}: {s}\n", .{ matrix.col_names[c], matrix.col_types[c].name() });
+    }
+
+    const yhat_col = matrix.columnIndex("yhat") orelse return error.NotFound;
+    const yhat = try matrix.getColumnFloat(yhat_col);
+    defer allocator.free(yhat);
+
+    std.debug.print("yhat[0] {any}\n", .{yhat[0]});
 }
 
 

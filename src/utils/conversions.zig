@@ -22,6 +22,7 @@ pub fn to_float(val: anytype) f64 {
     return switch (@typeInfo(@TypeOf(val))) {
         .int, .comptime_int => @floatFromInt(val),
         .float, .comptime_float => @floatCast(val),
+        .optional => to_float(val.?),
         else => @compileError("expected numeric type"),
     };
 }

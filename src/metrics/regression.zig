@@ -1,6 +1,6 @@
 const std = @import("std");
 const f = @import("../maths/functions.zig");
-const u = @import("../utils.zig");
+const u = @import("../utils/conversions.zig");
 
 
 const Epsilon = struct {
