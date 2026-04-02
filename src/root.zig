@@ -1,6 +1,7 @@
 pub const maths = @import("maths/functions.zig");
 pub const specials = @import("maths/specials.zig"); 
 pub const regression = @import("metrics/regression.zig");
+pub const classification = @import("metrics/classification.zig");
 pub const normaltests = @import("statstests/normal.zig");
 pub const conversions = @import("utils/conversions.zig");
 pub const csv = @import("utils/csv.zig");
@@ -120,6 +121,46 @@ test "test csv reader" {
     std.debug.print("yhat[0] {any}\n", .{yhat[0]});
 }
 
+test "test tp" {
+    const allocator = std.heap.page_allocator;
+
+    var matrix = try csv.readCsv(allocator, "classification_results.csv", ',');
+    defer matrix.deinit();
+
+    const yhat_col = matrix.columnIndex("yhat") orelse return error.NotFound;
+    const yhat = try matrix.getColumnFloat(yhat_col);
+ 
+    const y_col = matrix.columnIndex("y") orelse return error.NotFound;
+    const y = try matrix.getColumnFloat(y_col);
+       
+    defer allocator.free(y);
+    defer allocator.free(yhat);
+
+    std.debug.print("Total: {any}\n", .{y.len});
+    
+    const TP = classification.TP(y, yhat, 0.5);
+    std.debug.print("TP: {any}\n", .{TP});
+
+    const TN = classification.TN(y, yhat, 0.5);
+    std.debug.print("TN: {any}\n", .{TN});
+    
+    const FP = classification.FP(y, yhat, 0.5);
+    std.debug.print("FP: {any}\n", .{FP});
+    
+    const FN = classification.FN(y, yhat, 0.5);
+    std.debug.print("FN: {any}\n", .{FN});
+    
+    const accuracy = classification.accuracy(y, yhat, 0.5);
+    std.debug.print("accuracy: {any}\n", .{accuracy});
+
+    const recall = classification.recall(y, yhat, 0.5);
+    std.debug.print("recall: {any}\n", .{recall});
+    
+    const precision = classification.precision(y, yhat, 0.5);
+    std.debug.print("precision: {any}\n", .{precision});
+
+    const f1 = classification.f1(y, yhat, 0.5);
+    std.debug.print("f1: {any}\n", .{f1});
 
 
-
+}
