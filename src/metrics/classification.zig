@@ -1,3 +1,5 @@
+const Point = @import("../maths/geometry.zig").Point;
+const integrals = @import("../maths/intergrals.zig");
 
 pub fn TP(y: anytype, yhat: anytype, cutoff: f64) f64 {
     var sum_tp: f64 = 0.0;
@@ -61,6 +63,34 @@ pub fn f1(y: anytype, yhat: anytype, cutoff: f64) f64 {
 }
 
 
+pub fn roc(y: anytype, yhat: anytype, comptime cutoff_values: u64) [cutoff_values]Point {
+    var positive_vals: f64 = 0;
+    var negative_vals: f64 = 0;
+
+    for (y) |y_i| {
+        positive_vals += y_i.?;
+        negative_vals += (1 - y_i.?);
+    }
+    
+    var roc_value: [cutoff_values]Point = undefined;
+
+    for (1..cutoff_values) |i| {
+        const c: f64 = @as(f64,@floatFromInt(i)) / cutoff_values;
+
+        const TPR: f64 = TP(y, yhat, c) / positive_vals;
+        const FPR: f64 = FP(y, yhat, c) / negative_vals;
+        
+        roc_value[i-1] = Point{
+            .x = FPR,
+            .y = TPR,
+        };
+    }
+    return roc_value;
+}
+
+pub fn roc_auc(roc_points: anytype, comptime iterations: u64) !f64 {
+    return try integrals.monte_carlo_int(roc_points, 0.0, 1.0,  iterations);
+}
 
 
 
